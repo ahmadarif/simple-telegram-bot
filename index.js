@@ -74,7 +74,7 @@ app.on('callback_query', ctx => {
         return ctx.reply('Send a subreddit name.')
     }
 
-    ctx.answerCallbackQuery('Wait...')
+    ctx.answerCbQuery('Wait...')
     
     axios.get(`https://reddit.com/r/${subreddit}/${type}.json?limit=10`)
         .then(res => {
