@@ -1,0 +1,16 @@
+{
+  "name": "telegraf-example",
+  "version": "1.0.0",
+  "description": "telegram bot using telegraf",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "ahmad.arif019@gmail.com",
+  "license": "MIT",
+  "dependencies": {
+    "axios": "^0.17.1",
+    "telegraf": "^3.17.2"
+  }
+}
