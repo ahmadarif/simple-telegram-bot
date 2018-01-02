@@ -20,59 +20,65 @@ app.start(async (ctx) => {
     } else {
         console.log('member lama: ', userId)
     }
-    
-    return ctx.reply(`Assalamu'alaikum @${user.get('name')} 😇`)
+
+    return ctx.reply(`Assalamu'alaikum @${user.name} 😇`)
 })
 
 app.hears('hi', ctx => {
   return ctx.reply('Hey!')
 })
 
-app.command('top', ctx => {
+app.command('top', async (ctx) => {
     const userId = ctx.message.from.id
-    if (!state[userId])
-        state[userId] = {}
-    state[userId].command = 'top'
+    
+    const user = await User.findOne({ where: { userId: userId } })
+    user.command = 'top'
+    await user.save()
+    
     return ctx.replyWithMarkdown(`Enter a subreddit name to get *top* posts.`)
 })
 
-app.command('hot', ctx => {
+app.command('hot', async (ctx) => {
     const userId = ctx.message.from.id
-    if (!state[userId])
-        state[userId] = {}
-    state[userId].command = 'hot'
+    
+    const user = await User.findOne({ where: { userId: userId } })
+    user.command = 'hot'
+    await user.save()
+
     return ctx.replyWithMarkdown('Enter a subreddit name to get *hot* posts.')
 })
 
-app.on('text', ctx => {
+app.on('text', async (ctx) => {
     const subreddit = ctx.message.text
     const userId = ctx.message.from.id
-    const type = !state[userId] ? 'top' : state[userId].command ? state[userId].command : 'top'
 
-    if (!state[userId])
-        state[userId] = {}
+    const user = await User.findOne({ where: { userId: userId } })
 
-    state[userId].index = 0
+    const type = user.command ? user.command : 'top'
 
-    console.log(ctx.message.text)
-    axios.get(`https://reddit.com/r/${subreddit}/${type}.json?limit=10`)
-        .then(res => {
-            console.log('ada nih')
-            const data = res.data.data
-            if (data.children.length < 1)
-                return ctx.reply('The subreddit couldn\'t be found.')
+    user.index = 0
+    await user.save()
 
-            const link = `https://reddit.com/${data.children[0].data.permalink}`
-            console.log('test')
-            return ctx.reply(link,
-                Markup.inlineKeyboard([
-                    Markup.callbackButton('➡️ Next', subreddit)
-                ]).extra()
-            )
-        })
-        .catch(err => {
-            console.log('error nih', err)
-        })
+    const data = await axios.get(`https://reddit.com/r/${subreddit}/${type}.json?limit=10`)
+    console.log(data)
+
+        // .then(res => {
+        //     console.log('ada nih')
+        //     const data = res.data.data
+        //     if (data.children.length < 1)
+        //         return ctx.reply('The subreddit couldn\'t be found.')
+
+        //     const link = `https://reddit.com/${data.children[0].data.permalink}`
+        //     console.log('test')
+        //     return ctx.reply(link,
+        //         Markup.inlineKeyboard([
+        //             Markup.callbackButton('➡️ Next', subreddit)
+        //         ]).extra()
+        //     )
+        // })
+        // .catch(err => {
+        //     console.log('error nih', err)
+        // })
 })
 
 app.on('callback_query', ctx => {
