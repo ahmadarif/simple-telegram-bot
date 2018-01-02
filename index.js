@@ -1,8 +1,12 @@
+'use strict'
+
+require('dotenv').load();
 const Telegraf = require('telegraf')
 const { Markup } = require('telegraf')
-const app = new Telegraf('371076129:AAGal_jSzY6xvU7-n8oDh7tSfIxnxgOP4E8')
-const axios = require('axios') // add axios
+const axios = require('axios')
+const User = require('./db/models').User
 
+const app = new Telegraf('371076129:AAGal_jSzY6xvU7-n8oDh7tSfIxnxgOP4E8')
 let state = {}
 
 app.start((ctx) => {
@@ -52,7 +56,7 @@ app.on('text', ctx => {
             console.log('test')
             return ctx.reply(link,
                 Markup.inlineKeyboard([
-                    Markup.callbackButton('➡️ Next', subreddit),
+                    Markup.callbackButton('➡️ Next', subreddit)
                 ]).extra()
             )
         })
@@ -79,14 +83,15 @@ app.on('callback_query', ctx => {
     axios.get(`https://reddit.com/r/${subreddit}/${type}.json?limit=10`)
         .then(res => {
             const data = res.data.data
-            if (!data.children[index + 1])
+            if (!data.children[index + 1]) {
                 return ctx.reply('No more posts!')
+            }
 
             const link = `https://reddit.com/${data.children[index + 1].data.permalink}`
             state[userId].index = state[userId].index + 1
             return ctx.reply(link,
                 Markup.inlineKeyboard([
-                    Markup.callbackButton('➡️ Next', subreddit),
+                    Markup.callbackButton('➡️ Next', subreddit)
                 ]).extra()
             )
         })
