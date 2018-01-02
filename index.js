@@ -9,9 +9,19 @@ const User = require('./db/models').User
 const app = new Telegraf('371076129:AAGal_jSzY6xvU7-n8oDh7tSfIxnxgOP4E8')
 let state = {}
 
-app.start((ctx) => {
-    console.log('started:', ctx.from.id)
-    return ctx.reply("Assalamu'alaikum 😇")
+app.start(async (ctx) => {
+    const userId = ctx.from.id
+    const username = ctx.message.from.username
+    let user = await User.findOne({ where: { userId: userId } })
+
+    if (!user) {
+        console.log('baru mulai: ', userId)
+        user = await User.create({ userId: userId, name: username })
+    } else {
+        console.log('member lama: ', userId)
+    }
+    
+    return ctx.reply(`Assalamu'alaikum @${user.get('name')} 😇`)
 })
 
 app.hears('hi', ctx => {
