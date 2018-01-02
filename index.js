@@ -68,8 +68,7 @@ app.on('text', async (ctx) => {
         const user = await User.findOne({ where: { userId: userId } })
         const type = user.command != null ? user.command : 'top'
 
-        user.index = 0
-        await user.save()
+        await user.update({ index: 0 })
 
         const res = await axios.get(`https://reddit.com/r/${subreddit}/${type}.json?limit=10`, { timeout: 5000 })
         const data = res.data.data
@@ -90,37 +89,36 @@ app.on('text', async (ctx) => {
     }
 })
 
-app.on('callback_query', ctx => {
-    const subreddit = ctx.update.callback_query.data
-    const userId = ctx.update.callback_query.from.id
-    
-    let type
-    let index
+app.on('callback_query', async (ctx) => {
     try {
-        type = state[userId].command ? state[userId].command : 'top'
-        index = state[userId].index
-    } catch (err) {
-        return ctx.reply('Send a subreddit name.')
+        const subreddit = ctx.update.callback_query.data
+        const userId = ctx.update.callback_query.from.id
+        const user = await User.findOne({ where: { userId: userId } })
+
+        const type = user.command != null ? user.command : 'top'
+        const index = user.index
+
+        ctx.answerCbQuery('Wait...')
+
+        const res = await axios.get(`https://reddit.com/r/${subreddit}/${type}.json?limit=10`, { timeout: 5000 })
+        const data = res.data.data
+
+        if (!data.children[index + 1]) {
+            return ctx.reply('No more posts!')
+        }
+
+        await user.update({ index: user.index + 1 })
+        
+        const link = `https://reddit.com/${data.children[index + 1].data.permalink}`
+        return ctx.reply(link,
+            Markup.inlineKeyboard([
+                Markup.callbackButton('➡️ Next', subreddit)
+            ]).extra()
+        )
+    } catch (e) {
+        console.log('Terjadi kesalahan di "callback_query".', e)
+        return ctx.reply('Hampura error euy 🙇')
     }
-
-    ctx.answerCbQuery('Wait...')
-    
-    axios.get(`https://reddit.com/r/${subreddit}/${type}.json?limit=10`)
-        .then(res => {
-            const data = res.data.data
-            if (!data.children[index + 1]) {
-                return ctx.reply('No more posts!')
-            }
-
-            const link = `https://reddit.com/${data.children[index + 1].data.permalink}`
-            state[userId].index = state[userId].index + 1
-            return ctx.reply(link,
-                Markup.inlineKeyboard([
-                    Markup.callbackButton('➡️ Next', subreddit)
-                ]).extra()
-            )
-        })
-        .catch(err => console.log(err))
 })
 
 app.startPolling()
