@@ -49,36 +49,34 @@ app.command('hot', async (ctx) => {
 })
 
 app.on('text', async (ctx) => {
-    const subreddit = ctx.message.text
-    const userId = ctx.message.from.id
+    try {
+        const subreddit = ctx.message.text
+        const userId = ctx.message.from.id
+        
+        const user = await User.findOne({ where: { userId: userId } })
+        const type = user.command != null ? user.command : 'top'
 
-    const user = await User.findOne({ where: { userId: userId } })
+        user.index = 0
+        await user.save()
 
-    const type = user.command != null ? user.command : 'top'
+        const res = await axios.get(`https://reddit.com/r/${subreddit}/${type}.json?limit=10`, { timeout: 5000 })
+        const data = res.data.data
+        console.log(data)
 
-    user.index = 0
-    await user.save()
+        if (data.children.length < 1) {
+            return ctx.reply('The subreddit couldn\'t be found.')
+        }
 
-    const data = await axios.get(`https://reddit.com/r/${subreddit}/${type}.json?limit=10`).data
-    console.log(data)
-
-        // .then(res => {
-        //     console.log('ada nih')
-        //     const data = res.data.data
-        //     if (data.children.length < 1)
-        //         return ctx.reply('The subreddit couldn\'t be found.')
-
-        //     const link = `https://reddit.com/${data.children[0].data.permalink}`
-        //     console.log('test')
-        //     return ctx.reply(link,
-        //         Markup.inlineKeyboard([
-        //             Markup.callbackButton('➡️ Next', subreddit)
-        //         ]).extra()
-        //     )
-        // })
-        // .catch(err => {
-        //     console.log('error nih', err)
-        // })
+        const link = `https://reddit.com/${data.children[0].data.permalink}`
+        return ctx.reply(link,
+            Markup.inlineKeyboard([
+                Markup.callbackButton('➡️ Next', subreddit)
+            ]).extra()
+        )
+    } catch (e) {
+        return ctx.reply('Hampura error euy 🙇')
+        console.log('Terjadi kesalahan saat fetch data dari Reddit.', e)
+    }
 })
 
 app.on('callback_query', ctx => {
@@ -115,3 +113,18 @@ app.on('callback_query', ctx => {
 })
 
 app.startPolling()
+
+async function test() {
+    console.log('hitut')
+    try {
+        const request = await axios.get(`https://reddit.com/r/programming/top.json?limit=10`, { timeout: 5000 })
+        // const request = await axios.get(`https://daily-event.com/api/users`, { timeout: 5000 })
+        const data = request.data.data
+        console.log(data)
+        console.log('bau')
+    } catch (e) {
+        console.log('terjadi kesalahan')
+    }
+}
+
+test()
