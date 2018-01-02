@@ -6,8 +6,7 @@ const { Markup } = require('telegraf')
 const axios = require('axios')
 const User = require('./db/models').User
 
-const app = new Telegraf('371076129:AAGal_jSzY6xvU7-n8oDh7tSfIxnxgOP4E8')
-let state = {}
+const app = new Telegraf(process.env.TELEGRAM_TOKEN)
 
 app.start(async (ctx) => {
     try {
