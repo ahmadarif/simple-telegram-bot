@@ -4,6 +4,7 @@ module.exports = (sequelize, DataTypes) => {
     userId: DataTypes.STRING,
     name: DataTypes.STRING,
     command: DataTypes.STRING,
+    index: DataTypes.INTEGER
   }, {
     classMethods: {
       associate: function(models) {

@@ -10,18 +10,20 @@ const app = new Telegraf('371076129:AAGal_jSzY6xvU7-n8oDh7tSfIxnxgOP4E8')
 let state = {}
 
 app.start(async (ctx) => {
-    const userId = ctx.from.id
-    const username = ctx.message.from.username
-    let user = await User.findOne({ where: { userId: userId } })
+    try {
+        const userId = ctx.from.id
+        const username = ctx.message.from.username
+        let user = await User.findOne({ where: { userId: userId } })
 
-    if (!user) {
-        console.log('baru mulai: ', userId)
-        user = await User.create({ userId: userId, name: username })
-    } else {
-        console.log('member lama: ', userId)
+        if (!user) {
+            user = await User.create({ userId: userId, name: username })
+        }
+
+        return ctx.reply(`Assalamu'alaikum @${user.name} 😇`)
+    } catch (e) {
+        return ctx.reply('Hampura error euy 🙇')
+        console.log('Terjadi kesalahan saat fetch data dari Reddit.', e)
     }
-
-    return ctx.reply(`Assalamu'alaikum @${user.name} 😇`)
 })
 
 app.hears('hi', ctx => {
@@ -29,30 +31,40 @@ app.hears('hi', ctx => {
 })
 
 app.command('top', async (ctx) => {
-    const userId = ctx.message.from.id
-    
-    const user = await User.findOne({ where: { userId: userId } })
-    user.command = 'top'
-    await user.save()
-    
-    return ctx.replyWithMarkdown(`Enter a subreddit name to get *top* posts.`)
+    try {
+        const userId = ctx.message.from.id
+        
+        const user = await User.findOne({ where: { userId: userId } })
+        user.command = 'top'
+        await user.save()
+        
+        return ctx.replyWithMarkdown(`Enter a subreddit name to get *top* posts.`)
+    } catch (e) {
+        return ctx.reply('Hampura error euy 🙇')
+        console.log('Terjadi kesalahan saat fetch data dari Reddit.', e)
+    }
 })
 
 app.command('hot', async (ctx) => {
-    const userId = ctx.message.from.id
+    try {
+        const userId = ctx.message.from.id
     
-    const user = await User.findOne({ where: { userId: userId } })
-    user.command = 'hot'
-    await user.save()
+        const user = await User.findOne({ where: { userId: userId } })
+        user.command = 'hot'
+        await user.save()
 
-    return ctx.replyWithMarkdown('Enter a subreddit name to get *hot* posts.')
+        return ctx.replyWithMarkdown('Enter a subreddit name to get *hot* posts.')
+    } catch (e) {
+        return ctx.reply('Hampura error euy 🙇')
+        console.log('Terjadi kesalahan saat fetch data dari Reddit.', e)
+    }
 })
 
 app.on('text', async (ctx) => {
     try {
         const subreddit = ctx.message.text
         const userId = ctx.message.from.id
-        
+
         const user = await User.findOne({ where: { userId: userId } })
         const type = user.command != null ? user.command : 'top'
 
@@ -61,7 +73,6 @@ app.on('text', async (ctx) => {
 
         const res = await axios.get(`https://reddit.com/r/${subreddit}/${type}.json?limit=10`, { timeout: 5000 })
         const data = res.data.data
-        console.log(data)
 
         if (data.children.length < 1) {
             return ctx.reply('The subreddit couldn\'t be found.')
@@ -113,18 +124,3 @@ app.on('callback_query', ctx => {
 })
 
 app.startPolling()
-
-async function test() {
-    console.log('hitut')
-    try {
-        const request = await axios.get(`https://reddit.com/r/programming/top.json?limit=10`, { timeout: 5000 })
-        // const request = await axios.get(`https://daily-event.com/api/users`, { timeout: 5000 })
-        const data = request.data.data
-        console.log(data)
-        console.log('bau')
-    } catch (e) {
-        console.log('terjadi kesalahan')
-    }
-}
-
-test()

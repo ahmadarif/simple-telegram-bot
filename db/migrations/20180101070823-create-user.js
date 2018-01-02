@@ -17,6 +17,9 @@ module.exports = {
       command: {
         type: Sequelize.STRING
       },
+      index: {
+        type: Sequelize.INTEGER
+      },
       createdAt: {
         allowNull: false,
         type: Sequelize.DATE
