@@ -54,7 +54,7 @@ app.on('text', async (ctx) => {
 
     const user = await User.findOne({ where: { userId: userId } })
 
-    const type = user.command ? user.command : 'top'
+    const type = user.command != null ? user.command : 'top'
 
     user.index = 0
     await user.save()
