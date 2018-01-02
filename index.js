@@ -59,7 +59,7 @@ app.on('text', async (ctx) => {
     user.index = 0
     await user.save()
 
-    const data = await axios.get(`https://reddit.com/r/${subreddit}/${type}.json?limit=10`).data.data
+    const data = await axios.get(`https://reddit.com/r/${subreddit}/${type}.json?limit=10`).data
     console.log(data)
 
         // .then(res => {
