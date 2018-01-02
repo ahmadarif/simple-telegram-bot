@@ -21,8 +21,8 @@ app.start(async (ctx) => {
 
         return ctx.reply(`Assalamu'alaikum @${user.name} 😇`)
     } catch (e) {
-        return ctx.reply('Hampura error euy 🙇')
         console.log('Terjadi kesalahan saat fetch data dari Reddit.', e)
+        return ctx.reply('Hampura error euy 🙇')
     }
 })
 
@@ -40,8 +40,8 @@ app.command('top', async (ctx) => {
         
         return ctx.replyWithMarkdown(`Enter a subreddit name to get *top* posts.`)
     } catch (e) {
-        return ctx.reply('Hampura error euy 🙇')
         console.log('Terjadi kesalahan saat fetch data dari Reddit.', e)
+        return ctx.reply('Hampura error euy 🙇')
     }
 })
 
@@ -55,8 +55,8 @@ app.command('hot', async (ctx) => {
 
         return ctx.replyWithMarkdown('Enter a subreddit name to get *hot* posts.')
     } catch (e) {
-        return ctx.reply('Hampura error euy 🙇')
         console.log('Terjadi kesalahan saat fetch data dari Reddit.', e)
+        return ctx.reply('Hampura error euy 🙇')
     }
 })
 
@@ -85,8 +85,8 @@ app.on('text', async (ctx) => {
             ]).extra()
         )
     } catch (e) {
-        return ctx.reply('Hampura error euy 🙇')
         console.log('Terjadi kesalahan saat fetch data dari Reddit.', e)
+        return ctx.reply('Hampura error euy 🙇')
     }
 })
 
