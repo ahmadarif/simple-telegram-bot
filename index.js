@@ -177,7 +177,7 @@ app.action('➡️ Next', async (ctx) => {
         const type = user.command != null ? user.command : 'top'
         const index = user.index
         
-        ctx.answerCbQuery('Wait...')
+        // ctx.answerCbQuery('Wait...')
         
         const res = await axios.get(`https://reddit.com/r/${subreddit}/${type}.json?limit=10`, { timeout: 5000 })
         const data = res.data.data
