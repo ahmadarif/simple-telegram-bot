@@ -131,6 +131,15 @@ app.on('callback_query', async (ctx) => {
 
 app.on('channel_post', async (ctx) => {
     console.log(ctx)
+    console.log('channel_post')
+})
+
+app.on('new_chat_members', async (ctx) => {
+    // console.log(JSON.stringify(ctx.update.message))
+    const message = ctx.update.message
+    const newMember = message.new_chat_participant // id, is_bot, first_name, last_name, username
+    const user = await UserService.findOrCreate(newMember.id, newMember.username)
+    return ctx.reply(`Sampurasun @${user.name} 🙋`)
 })
 
 app.startPolling()
