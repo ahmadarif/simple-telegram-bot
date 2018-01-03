@@ -123,6 +123,11 @@ app.command('hot', async (ctx) => {
 //             Markup.callbackButton('Delete', 'delete')
 //         ])
 //     ))
+//     if (update.message.chat.type == 'private') {
+//         console.log('private chat')
+//     } else {
+//         console.log('group OR supergroup chat')
+//     }
 // })
 // app.action('delete', ({ deleteMessage, update }) => {
 //     console.log('action delete =', update.callback_query.data)
@@ -130,8 +135,6 @@ app.command('hot', async (ctx) => {
 // })
 
 app.on('text', async (ctx) => {
-    // console.log(ctx.update)
-    console.log('on text')
     if (ctx.update.message.chat.type == 'private') { // personal chat
         try {
             const subreddit = ctx.message.text
@@ -161,12 +164,8 @@ app.on('text', async (ctx) => {
             return ctx.reply('Hampura error euy 🙇')
         }
     } else {
-
+        console.log('group OR supergroup')
     }
-})
-
-app.action('➡️ Next', async (ctx) => {
-    console.log('➡️ Next terpanggil')
 })
 
 app.on('callback_query', async (ctx) => {
@@ -192,7 +191,7 @@ app.on('callback_query', async (ctx) => {
         await user.update({ index: user.index + 1 })
         
         const link = `https://reddit.com/${data.children[index + 1].data.permalink}`
-        return ctx.replyWithChatAction(link,
+        return ctx.reply(link,
             Markup.inlineKeyboard([
                 Markup.callbackButton('➡️ Next', subreddit)
             ]).extra()
@@ -204,7 +203,6 @@ app.on('callback_query', async (ctx) => {
 })
 
 app.on('new_chat_members', async (ctx) => {
-    // console.log(JSON.stringify(ctx.update.message))
     const message = ctx.update.message
     const newMember = message.new_chat_participant // id, is_app, first_name, last_name, username
     const user = await UserService.findOrCreate(newMember.id, newMember.username)
