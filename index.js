@@ -135,11 +135,14 @@ app.on('channel_post', async (ctx) => {
 })
 
 app.on('new_chat_members', async (ctx) => {
-    // console.log(JSON.stringify(ctx.update.message))
+    console.log(JSON.stringify(ctx.update.message))
     const message = ctx.update.message
     const newMember = message.new_chat_participant // id, is_bot, first_name, last_name, username
     const user = await UserService.findOrCreate(newMember.id, newMember.username)
-    return ctx.reply(`Sampurasun @${user.name} 🙋`)
+    if (newMember.username)
+        return ctx.reply(`Sampurasun @${newMember.username} 🙋`)
+    else
+        return ctx.replyWithMarkdown(`Sampurasun *${newMember.first_name + " " + newMember.last_name}* 🙋`)
 })
 
 app.startPolling()
