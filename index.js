@@ -189,7 +189,7 @@ app.action('➡️ Next', async (ctx) => {
         await user.update({ index: user.index + 1 })
         
         const link = `https://reddit.com/${data.children[index + 1].data.permalink}`
-        return ctx.reply(link,
+        return ctx.replyWithChatAction(link,
             Markup.inlineKeyboard([
                 Markup.callbackButton('➡️ Next', subreddit)
             ]).extra()
