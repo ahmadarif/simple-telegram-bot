@@ -1,22 +1,20 @@
 'use strict'
 
-require('dotenv').load();
+require('dotenv').load()
+
 const Telegraf = require('telegraf')
 const { Markup } = require('telegraf')
 const axios = require('axios')
-const User = require('./db/models').User
+const UserService = require('./services/UserService')
 
 const app = new Telegraf(process.env.TELEGRAM_TOKEN)
 
 app.start(async (ctx) => {
     try {
         const userId = ctx.from.id
-        const username = ctx.message.from.username
-        let user = await User.findOne({ where: { userId: userId } })
+        const username = ctx.from.username
 
-        if (!user) {
-            user = await User.create({ userId: userId, name: username })
-        }
+        const user = await UserService.findOrCreate(userId, username)
 
         return ctx.reply(`Assalamu'alaikum @${user.name} 😇`)
     } catch (e) {
@@ -25,15 +23,22 @@ app.start(async (ctx) => {
     }
 })
 
-app.hears('hi', ctx => {
-  return ctx.reply('Hey!')
+app.hears('hi', async (ctx) => {
+    console.log('from = ', ctx.from)
+    console.log('message = ', ctx.message)
+    // console.log('chat = ', await ctx.getChat())
+    // console.log('chat administrator = ', await ctx.getChatAdministrators()) // dont use in private chat
+    // console.log('chat member = ', await ctx.getChatMember())
+    // console.log('member count = ', await ctx.getChatMembersCount())
+    return ctx.reply('Hey!')
 })
 
 app.command('top', async (ctx) => {
     try {
-        const userId = ctx.message.from.id
-        
-        const user = await User.findOne({ where: { userId: userId } })
+        const userId = ctx.from.id
+        const username = ctx.from.username
+
+        const user = await UserService.findOrCreate(userId, username)
         user.command = 'top'
         await user.save()
         
@@ -46,9 +51,10 @@ app.command('top', async (ctx) => {
 
 app.command('hot', async (ctx) => {
     try {
-        const userId = ctx.message.from.id
-    
-        const user = await User.findOne({ where: { userId: userId } })
+        const userId = ctx.from.id
+        const username = ctx.from.username
+
+        const user = await UserService.findOrCreate(userId, username)
         user.command = 'hot'
         await user.save()
 
@@ -62,9 +68,10 @@ app.command('hot', async (ctx) => {
 app.on('text', async (ctx) => {
     try {
         const subreddit = ctx.message.text
-        const userId = ctx.message.from.id
+        const userId = ctx.from.id
+        const username = ctx.from.username
 
-        const user = await User.findOne({ where: { userId: userId } })
+        const user = await UserService.findOrCreate(userId, username)
         const type = user.command != null ? user.command : 'top'
 
         await user.update({ index: 0 })
@@ -92,20 +99,22 @@ app.on('callback_query', async (ctx) => {
     try {
         const subreddit = ctx.update.callback_query.data
         const userId = ctx.update.callback_query.from.id
-        const user = await User.findOne({ where: { userId: userId } })
+        const username = ctx.from.username
 
+        const user = await UserService.findOrCreate(userId, username)
+        
         const type = user.command != null ? user.command : 'top'
         const index = user.index
-
+        
         ctx.answerCbQuery('Wait...')
-
+        
         const res = await axios.get(`https://reddit.com/r/${subreddit}/${type}.json?limit=10`, { timeout: 5000 })
         const data = res.data.data
-
+        
         if (!data.children[index + 1]) {
             return ctx.reply('No more posts!')
         }
-
+        
         await user.update({ index: user.index + 1 })
         
         const link = `https://reddit.com/${data.children[index + 1].data.permalink}`
@@ -118,6 +127,10 @@ app.on('callback_query', async (ctx) => {
         console.log('Terjadi kesalahan di "on callback_query".', e)
         return ctx.reply('Hampura error euy 🙇')
     }
+})
+
+app.on('channel_post', async (ctx) => {
+    console.log(ctx)
 })
 
 app.startPolling()
