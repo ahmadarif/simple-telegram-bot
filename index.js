@@ -5,11 +5,28 @@ require('dotenv').load()
 const Telegraf = require('telegraf')
 const Markup = require('telegraf/markup')
 const Extra = require('telegraf/extra')
+const rateLimit = require('telegraf-ratelimit')
 const axios = require('axios')
 const UserService = require('./services/UserService')
+const { checkIsMentioned } = require('./utils/telegraf-utils')
 
 const app = new Telegraf(process.env.TELEGRAM_TOKEN)
+
+// Set limit to 1 message per 3 seconds
+app.use(rateLimit({
+    window: 3000,
+    limit: 1,
+    onLimitExceeded: (ctx, next) => ctx.reply('Santai bro/sist, pelan-pelan ai kamu 😓')
+}))
+
 app.use(Telegraf.log())
+
+app.use(async (ctx, next) => {
+    const bot = await ctx.telegram.getMe()
+    ctx.isMentioned = checkIsMentioned(ctx, bot)
+    ctx.chatType = ctx.message.chat.type
+    return next()
+})
 
 app.telegram.getMe().then((appInfo) => {
     app.options.username = appInfo.username
@@ -36,7 +53,10 @@ app.hears('hi', async (ctx) => {
     // console.log('chat administrator = ', await ctx.getChatAdministrators()) // dont use in private chat
     // console.log('chat member = ', await ctx.getChatMember())
     // console.log('member count = ', await ctx.getChatMembersCount())
-    return ctx.reply('Hey!')
+    if (ctx.chatType == 'private' || ctx.isMentioned) {
+        return ctx.reply('Hey!')
+    }
+    console.log('say hi')
 })
 
 app.command('top', async (ctx) => {
@@ -164,7 +184,7 @@ app.on('text', async (ctx) => {
             return ctx.reply('Hampura error euy 🙇')
         }
     } else {
-        console.log('group OR supergroup')
+        console.log('isMentioned = ', ctx.isMentioned)
     }
 })
 
@@ -207,7 +227,7 @@ app.on('new_chat_members', async (ctx) => {
     const newMember = message.new_chat_participant // id, is_app, first_name, last_name, username
     const user = await UserService.findOrCreate(newMember.id, newMember.username)
     if (newMember.username)
-        return ctx.reply(`Sampurasun @${newMember.username} 🙋`)
+        return ctx.reply(`Sampurasun @${newMember.username} 🙋‍♂️`)
     else
         return ctx.replyWithMarkdown(`Sampurasun *${newMember.first_name + " " + newMember.last_name}* 🙋`)
 })
