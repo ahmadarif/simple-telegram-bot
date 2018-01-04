@@ -6,11 +6,14 @@ const Telegraf = require('telegraf')
 const Markup = require('telegraf/markup')
 const Extra = require('telegraf/extra')
 const rateLimit = require('telegraf-ratelimit')
+const commandParts = require('telegraf-command-parts')
 const axios = require('axios')
 const UserService = require('./services/UserService')
 const { checkIsMentioned } = require('./utils/telegraf-utils')
+const { getRandomItem } = require('./utils/utils')
 
 const app = new Telegraf(process.env.TELEGRAM_TOKEN)
+let bot
 
 // Set limit to 1 message per 3 seconds
 app.use(rateLimit({
@@ -18,6 +21,8 @@ app.use(rateLimit({
     limit: 1,
     onLimitExceeded: (ctx, next) => ctx.reply('Santai bro/sist, pelan-pelan ai kamu 😓')
 }))
+
+app.use(commandParts())
 
 app.use(Telegraf.log())
 
@@ -30,6 +35,7 @@ app.use(async (ctx, next) => {
 
 app.telegram.getMe().then((appInfo) => {
     app.options.username = appInfo.username
+    bot = appInfo
 })
 
 app.start(async (ctx) => {
@@ -46,17 +52,13 @@ app.start(async (ctx) => {
     }
 })
 
-app.hears('hi', async (ctx) => {
-    // console.log('from = ', ctx.from)
-    // console.log('message = ', ctx.message)
-    // console.log('chat = ', await ctx.getChat())
-    // console.log('chat administrator = ', await ctx.getChatAdministrators()) // dont use in private chat
-    // console.log('chat member = ', await ctx.getChatMember())
-    // console.log('member count = ', await ctx.getChatMembersCount())
+app.hears(/^(hi|hello|hai|halo|(.\w+ (hi|hello|hai|halo)))/i, async (ctx) => {
     if (ctx.chatType == 'private' || ctx.isMentioned) {
-        return ctx.reply('Hey!')
+        const sapaan = ["hi", "hello", "hai", "halo"]
+        return ctx.reply(`${getRandomItem(sapaan)} @${ctx.from.username} 🙋‍♂️`)
+    } else {
+        console.log('terpanggil')
     }
-    console.log('say hi')
 })
 
 app.command('top', async (ctx) => {
