@@ -9,7 +9,7 @@ const rateLimit = require('telegraf-ratelimit')
 const commandParts = require('telegraf-command-parts')
 const axios = require('axios')
 const UserService = require('./services/UserService')
-const { checkIsMentioned } = require('./utils/telegraf-utils')
+const { checkIsMentioned, backReply } = require('./utils/telegraf-utils')
 const { getRandomItem } = require('./utils/utils')
 
 const app = new Telegraf(process.env.TELEGRAM_TOKEN)
@@ -155,9 +155,10 @@ app.command('hot', async (ctx) => {
 //     console.log('action delete =', update.callback_query.data)
 //     deleteMessage()
 // })
-
 app.on('text', async (ctx) => {
     if (ctx.update.message.chat.type == 'private') { // personal chat
+        return ctx.replyWithMarkdown('Hi')
+
         try {
             const subreddit = ctx.message.text
             const userId = ctx.from.id
@@ -187,6 +188,9 @@ app.on('text', async (ctx) => {
         }
     } else {
         console.log('isMentioned = ', ctx.isMentioned)
+        if (ctx.isMentioned) {
+            return ctx.reply('Enya cok', backReply(ctx))
+        }
     }
 })
 
@@ -229,7 +233,7 @@ app.on('new_chat_members', async (ctx) => {
     const newMember = message.new_chat_participant // id, is_app, first_name, last_name, username
     const user = await UserService.findOrCreate(newMember.id, newMember.username)
     if (newMember.username)
-        return ctx.reply(`Sampurasun @${newMember.username} 🙋‍♂️`)
+        return ctx.reply(`Sampurasun @${newMember.username} 🙋‍♂️`, backReply(ctx))
     else
         return ctx.replyWithMarkdown(`Sampurasun *${newMember.first_name + " " + newMember.last_name}* 🙋`)
 })

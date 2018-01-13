@@ -11,3 +11,7 @@ exports.checkIsMentioned = function(ctx, bot) {
     }
     return isMentioned
 }
+
+exports.backReply = function (ctx) {
+    return Object.assign({ 'reply_to_message_id': ctx.message.message_id })
+}
