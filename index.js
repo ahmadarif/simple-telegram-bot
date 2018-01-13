@@ -16,11 +16,11 @@ const app = new Telegraf(process.env.TELEGRAM_TOKEN)
 let bot
 
 // Set limit to 1 message per 3 seconds
-app.use(rateLimit({
-    window: 3000,
-    limit: 1,
-    onLimitExceeded: (ctx, next) => ctx.reply('Santai bro/sist, pelan-pelan ai kamu 😓')
-}))
+// app.use(rateLimit({
+//     window: 3000,
+//     limit: 1,
+//     onLimitExceeded: (ctx, next) => ctx.reply('Santai bro/sist, pelan-pelan ai kamu 😓')
+// }))
 
 app.use(commandParts())
 
