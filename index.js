@@ -157,8 +157,6 @@ app.command('hot', async (ctx) => {
 // })
 app.on('text', async (ctx) => {
     if (ctx.update.message.chat.type == 'private') { // personal chat
-        return ctx.replyWithMarkdown('Hi')
-
         try {
             const subreddit = ctx.message.text
             const userId = ctx.from.id
